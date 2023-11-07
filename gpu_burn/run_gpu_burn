@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#
+#                         License
+#
+# Copyright (C) 2021  Keith Valin kvalin@redhat.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# This script automates the execution of gpu_burn.
+#
+
+gpu_burn_repo="https://github.com/wilicc/gpu-burn.git"
+GPU_BURN_DIRNAME="gpu_burn"
+duration=10
+
+build_gpu_burn() {
+	git clone $gpu_burn_repo $GPU_BURN_DIRNAME
+	pushd gpu_burn
+
+	make
+	popd
+}
+
+run_gpu_burn() {
+	./$GPU_BURN_DIRNAME/gpu_burn $duration
+}
+
+ARGS=(
+	"--duration"
+)
+
+NO_ARGS=(
+	"jetson"
+)
+
+opts=$(getopt \
+	--longoptions "$(printf "%s:," "${ARGUMENT_LIST[@]}")" \
+	--longoptions "$(printf "%s," "${NO_ARGS[@]}")" \
+	--name "$(basename "$0")" \
+	--options "hd:" \
+	-- "$@"
+)
+
+eval set --$opts
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--duration | -d)
+			duration=$2
+			shift 2
+		;;
+		--jetson)
+			gpu_burn_repo="https://github.com/kdvalin/jetson-gpu-burn.git"
+			shift 1
+		;;
+		-h)
+			usage $0
+		;;
+		--)
+			break
+		;;
+		*)
+			echo option not found $1
+			usage $0
+		;;
+	esac
+done
+
+build_gpu_burn
+run_gpu_burn
