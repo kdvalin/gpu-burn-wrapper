@@ -31,7 +31,7 @@ build_gpu_burn() {
 	git clone $gpu_burn_repo $GPU_BURN_DIRNAME
 	pushd $GPU_BURN_DIRNAME
 
-	if [ ! -d $CUDA_PATH ]; then
+	if [[ ! -e $CUDA_PATH ]]; then
 		ln -s /usr/cuda $CUDA_PATH
 	fi
 
