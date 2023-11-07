@@ -22,24 +22,31 @@
 # This script automates the execution of gpu_burn.
 #
 
+CUDA_PATH="/usr/local/cuda"
 gpu_burn_repo="https://github.com/wilicc/gpu-burn.git"
 GPU_BURN_DIRNAME="gpu_burn"
 duration=10
 
 build_gpu_burn() {
 	git clone $gpu_burn_repo $GPU_BURN_DIRNAME
-	pushd gpu_burn
+	pushd $GPU_BURN_DIRNAME
+
+	if [ ! -d $CUDA_PATH ]; then
+		ln -s /usr/cuda $CUDA_PATH
+	fi
 
 	make
 	popd
 }
 
 run_gpu_burn() {
-	./$GPU_BURN_DIRNAME/gpu_burn $duration
+	pushd $GPU_BURN_DIRNAME
+	./gpu_burn $duration
+	popd
 }
 
 ARGS=(
-	"--duration"
+	"duration"
 )
 
 NO_ARGS=(
@@ -47,7 +54,7 @@ NO_ARGS=(
 )
 
 opts=$(getopt \
-	--longoptions "$(printf "%s:," "${ARGUMENT_LIST[@]}")" \
+	--longoptions "$(printf "%s:," "${ARGS[@]}")" \
 	--longoptions "$(printf "%s," "${NO_ARGS[@]}")" \
 	--name "$(basename "$0")" \
 	--options "hd:" \
