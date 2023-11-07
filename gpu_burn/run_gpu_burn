@@ -29,20 +29,20 @@ duration=10
 
 build_gpu_burn() {
 	git clone $gpu_burn_repo $GPU_BURN_DIRNAME
-	pushd $GPU_BURN_DIRNAME
+	pushd $GPU_BURN_DIRNAME 2> /dev/null > /dev/null
 
 	if [[ ! -e $CUDA_PATH ]]; then
 		ln -s /usr/cuda $CUDA_PATH
 	fi
 
 	make
-	popd
+	popd 2> /dev/null > /dev/null
 }
 
 run_gpu_burn() {
-	pushd $GPU_BURN_DIRNAME
+	pushd $GPU_BURN_DIRNAME 2> /dev/null > /dev/null
 	./gpu_burn $duration
-	popd
+	popd 2> /dev/null > /dev/null
 }
 
 ARGS=(
