@@ -26,6 +26,7 @@ CUDA_PATH="/usr/local/cuda"
 gpu_burn_repo="https://github.com/wilicc/gpu-burn.git"
 GPU_BURN_DIRNAME="gpu_burn"
 duration=10
+edge=0
 
 build_gpu_burn() {
 	git clone $gpu_burn_repo $GPU_BURN_DIRNAME
@@ -37,8 +38,30 @@ build_gpu_burn() {
 
 run_gpu_burn() {
 	pushd $GPU_BURN_DIRNAME > /dev/null
-	./gpu_burn $duration
+	./gpu_burn $duration > /tmp/gpu_burn.out
 	popd > /dev/null
+}
+
+generate_result() {
+	final_results=`tr '\r' '\n' < /tmp/gpu_burn.out | grep "100.0%" | tail -n 1`
+	
+	if [[ $edge -eq 0 ]]; then
+		gpus=`grep -Eo "^GPU [0-9]+" /tmp/gpu_burn.out | awk '{ print $2 }'`
+	else
+		gpus=((0))
+	fi
+
+	header=""
+	result_line=""
+	for gpu_num in $gpus; then
+		gpu_name=`grep -E "^GPU 0:" /tmp/gpu_burn.out | awk '{ print $3 " " $4 }'`
+		header="$gpu_name (Gflop/s),$header"
+		gpu_result=`echo $final_results | cut -d'-' -f$((gpu_num+1)) | grep -E "[0-9]+ Gflop/s" | awk '{ print $1 }'`
+		result_line="$gpu_result,$result_line"
+	end
+
+	echo $header
+	echo $result_line
 }
 
 ARGS=(
@@ -67,6 +90,7 @@ while [[ $# -gt 0 ]]; do
 		;;
 		--jetson)
 			gpu_burn_repo="https://github.com/kdvalin/jetson-gpu-burn.git"
+			edge=1
 
 			if [[ ! -e $CUDA_PATH ]]; then
 				ln -s /usr/cuda $CUDA_PATH
@@ -88,3 +112,4 @@ done
 
 build_gpu_burn
 run_gpu_burn
+generate_result
