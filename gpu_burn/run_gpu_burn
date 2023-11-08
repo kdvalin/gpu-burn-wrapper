@@ -53,12 +53,12 @@ generate_result() {
 
 	header=""
 	result_line=""
-	for gpu_num in $gpus; then
+	for gpu_num in $gpus; do
 		gpu_name=`grep -E "^GPU 0:" /tmp/gpu_burn.out | awk '{ print $3 " " $4 }'`
 		header="$gpu_name (Gflop/s),$header"
 		gpu_result=`echo $final_results | cut -d'-' -f$((gpu_num+1)) | grep -E "[0-9]+ Gflop/s" | awk '{ print $1 }'`
 		result_line="$gpu_result,$result_line"
-	end
+	done
 
 	echo $header
 	echo $result_line
