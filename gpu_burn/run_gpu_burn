@@ -38,6 +38,7 @@ build_gpu_burn() {
 
 run_gpu_burn() {
 	pushd $GPU_BURN_DIRNAME > /dev/null
+	# Allow for non-zero exit code since jetson-gpu-burn fails for some reason
 	./gpu_burn $duration > /tmp/gpu_burn.out
 	popd > /dev/null
 }
@@ -55,8 +56,12 @@ generate_result() {
 	result_line=""
 	for gpu_num in $gpus; do
 		gpu_name=`grep -E "^GPU 0:" /tmp/gpu_burn.out | awk '{ print $3 " " $4 }'`
+		if [[ -z "$gpu_name" ]]; then
+			gpu_name="Integrated GPU"
+		fi
+
 		header="$gpu_name (Gflop/s),$header"
-		gpu_result=`echo $final_results | cut -d'-' -f$((gpu_num+1)) | grep -E "[0-9]+ Gflop/s" | awk '{ print $1 }'`
+		gpu_result=`echo $final_results | cut -d'-' -f$((gpu_num+1)) | grep -Eo "[0-9]+ Gflop/s" | awk '{ print $1 }'`
 		result_line="$gpu_result,$result_line"
 	done
 
