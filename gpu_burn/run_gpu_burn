@@ -48,7 +48,7 @@ generate_result() {
 	if [[ $edge -eq 0 ]]; then
 		gpus=`grep -Eo "^GPU [0-9]+" /tmp/gpu_burn.out | awk '{ print $2 }'`
 	else
-		gpus=((0))
+		gpus=(0)
 	fi
 
 	header=""
